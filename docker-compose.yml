@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+# configure api
+  app:
+    build:
+      context: .
+    ports:
+      - "8888:3000"
+    volumes:
+      - ./dist:/app/src
+    restart: on-failure
+    command: >
+      npx nodemon src/main.js
+    depends_on:
+      - postgres
+
+## configure front
+  web:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    restart: on-failure
+    volumes:
+    - ./build_client:/usr/share/nginx/html
+    - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+# configure Postgres
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+
+    env_file:
+      - .env
+
+    environment:
+      PG_DATA: /var/lib/postgresql/data
+
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    restart: on-failure
+
+#volumes:
+#  pgdata:
+#    volumes:
+#      - ./mongo-db:/data/db
+#      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
